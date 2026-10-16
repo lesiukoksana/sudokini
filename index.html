@@ -44,9 +44,9 @@
   /* ---------- masthead ---------- */
   .masthead { display: flex; justify-content: center; align-items: center; gap: 18px; }
   .brand { display: grid; justify-items: center; gap: 10px; text-align: center; }
-  .mascot { width: 104px; height: 104px; flex: none; animation: bob 3s ease-in-out infinite; overflow: visible; }
+  .mascot { width: 104px; height: 104px; flex: none; animation: dance 1s ease-in-out infinite; transform-origin: 50% 95%; overflow: visible; cursor: pointer; }
   .mascot.flip { animation: flip .8s ease-in-out; }
-  @keyframes bob { 0%,100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-7px) rotate(5deg); } }
+  @keyframes dance { 0%,100% { transform: translateX(-3px) rotate(-8deg); } 25%,75% { transform: translateY(-6px) rotate(0); } 50% { transform: translateX(3px) rotate(8deg); } }
   @keyframes flip { 0% { transform: rotate(0) scale(1); } 50% { transform: rotate(200deg) scale(1.3); } 100% { transform: rotate(360deg) scale(1); } }
   .logo {
     margin: 0; font: 400 clamp(40px, 8vw, 74px)/.9 "Lilita One", "Arial Black", sans-serif;
@@ -154,21 +154,18 @@
   @keyframes flash { 0% { background: var(--basilico); } 100% { background: var(--piatto); } }
 
   .lane { position: absolute; inset: 0; overflow: hidden; border-radius: 14px; pointer-events: none; z-index: 3; }
-  .diver { position: absolute; top: 18%; left: 0; width: calc(var(--bw) * .3); aspect-ratio: 1; opacity: 0; }
+  .diver { position: absolute; left: 50%; bottom: 0; width: calc(var(--bw) * .42); aspect-ratio: 1; transform: translate(-50%, 105%); }
   .diver svg { width: 100%; height: 100%; overflow: visible; }
-  .diver.swim { animation: swim 2s ease-in-out forwards; }
-  @keyframes swim {
-    0% { opacity: 1; transform: translate(-110%, 0) rotate(14deg); }
-    25% { transform: translate(60%, -14%) rotate(-8deg); }
-    50% { transform: translate(150%, 10%) rotate(10deg); }
-    75% { transform: translate(240%, -10%) rotate(-8deg); }
-    100% { opacity: 1; transform: translate(360%, 0) rotate(14deg); }
+  .diver.swim { animation: peek 1.9s ease-in-out forwards; }
+  @keyframes peek {
+    0% { transform: translate(-50%, 105%); }
+    18% { transform: translate(-50%, 6%) rotate(-7deg); }
+    32% { transform: translate(-50%, 16%) rotate(6deg); }
+    46% { transform: translate(-50%, 4%) rotate(-6deg); }
+    60% { transform: translate(-50%, 14%) rotate(5deg); }
+    78% { transform: translate(-50%, 8%) rotate(0); }
+    100% { transform: translate(-50%, 105%); }
   }
-  .bubble {
-    position: absolute; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink);
-    background: var(--mare); pointer-events: none; z-index: 3; animation: rise 1.4s ease-out forwards;
-  }
-  @keyframes rise { 0% { opacity: .9; transform: translateY(0) scale(.5); } 100% { opacity: 0; transform: translateY(-90px) scale(1.2); } }
 
   .caption {
     position: absolute; left: 50%; top: 40%; width: 96%; text-align: center; pointer-events: none; z-index: 4;
@@ -295,33 +292,43 @@
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
-    <clipPath id="sc-head"><ellipse cx="60" cy="72" rx="40" ry="35"/></clipPath>
+    <clipPath id="sc-head"><ellipse cx="62" cy="40" rx="30" ry="26"/></clipPath>
+    <clipPath id="sc-body"><path d="M44 104 C38 84 44 66 62 64 C80 66 86 84 80 104 C74 110 50 110 44 104 Z"/></clipPath>
     <symbol id="scuba" viewBox="0 0 124 124">
-      <path d="M98 78 C112 78 112 68 112 58 L112 16" fill="none" stroke="#1B1209" stroke-width="15" stroke-linecap="round"/>
-      <path d="M98 78 C112 78 112 68 112 58 L112 16" fill="none" stroke="#FFC21A" stroke-width="8" stroke-linecap="round"/>
-      <rect x="104" y="6" width="16" height="12" rx="4" fill="#E0262E" stroke="#1B1209" stroke-width="3"/>
-      <path d="M24 56 L27 14 L54 40 Z" fill="#F28C28" stroke="#1B1209" stroke-width="4" stroke-linejoin="round"/>
-      <path d="M31 27 L32 43 L44 41 Z" fill="#FFB3C0"/>
-      <path d="M66 40 L93 14 L96 56 Z" fill="#4A4038" stroke="#1B1209" stroke-width="4" stroke-linejoin="round"/>
-      <path d="M89 27 L76 41 L88 43 Z" fill="#FFB3C0"/>
-      <ellipse cx="60" cy="72" rx="40" ry="35" fill="#FFFFFF"/>
-      <g clip-path="url(#sc-head)">
-        <ellipse cx="28" cy="52" rx="24" ry="18" fill="#F28C28"/>
-        <ellipse cx="94" cy="50" rx="22" ry="20" fill="#4A4038"/>
-        <ellipse cx="84" cy="106" rx="16" ry="9" fill="#F28C28"/>
+      <path d="M53 100 L44 113 M71 100 L81 113" fill="none" stroke="#1B1209" stroke-width="13" stroke-linecap="round"/>
+      <path d="M53 100 L44 113 M71 100 L81 113" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
+      <ellipse cx="40" cy="115" rx="10" ry="5.5" transform="rotate(-12 40 115)" fill="#FFFFFF" stroke="#1B1209" stroke-width="3.5"/>
+      <ellipse cx="86" cy="115" rx="10" ry="5.5" transform="rotate(12 86 115)" fill="#FFFFFF" stroke="#1B1209" stroke-width="3.5"/>
+      <path d="M44 104 C38 84 44 66 62 64 C80 66 86 84 80 104 C74 110 50 110 44 104 Z" fill="#FFFFFF"/>
+      <g clip-path="url(#sc-body)">
+        <ellipse cx="44" cy="86" rx="8" ry="10" fill="#8C8885"/>
+        <ellipse cx="80" cy="96" rx="9" ry="8" fill="#8C8885"/>
+        <ellipse cx="60" cy="104" rx="5" ry="4" fill="#8C8885"/>
       </g>
-      <ellipse cx="60" cy="72" rx="40" ry="35" fill="none" stroke="#1B1209" stroke-width="4"/>
-      <path d="M19 68 L28 66 M92 66 L101 68" fill="none" stroke="#1B1209" stroke-width="7" stroke-linecap="round"/>
-      <rect x="27" y="52" width="66" height="30" rx="13" fill="#8ED8F0" stroke="#1B1209" stroke-width="4"/>
-      <path d="M60 52 L60 63" fill="none" stroke="#1B1209" stroke-width="3"/>
-      <circle cx="45" cy="68" r="6" fill="#1B1209"/>
-      <circle cx="75" cy="68" r="6" fill="#1B1209"/>
-      <circle cx="47" cy="66" r="2" fill="#FFFFFF"/>
-      <circle cx="77" cy="66" r="2" fill="#FFFFFF"/>
-      <path d="M34 61 Q37 57 43 57" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
-      <path d="M56 87 L64 87 L60 92 Z" fill="#FF8FA3" stroke="#1B1209" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M52 95 Q60 109 68 95 Z" fill="#7A1E1E" stroke="#1B1209" stroke-width="2.5" stroke-linejoin="round"/>
-      <path d="M21 88 L40 90 M21 96 L40 94 M99 88 L80 90 M99 96 L80 94" fill="none" stroke="#1B1209" stroke-width="2" stroke-linecap="round"/>
+      <path d="M44 104 C38 84 44 66 62 64 C80 66 86 84 80 104 C74 110 50 110 44 104 Z" fill="none" stroke="#1B1209" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M38 28 L35 1 L57 17 Z" fill="#8C8885" stroke="#1B1209" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M40 22 L38 9 L50 18 Z" fill="#FFB3C0"/>
+      <path d="M67 17 L89 1 L86 28 Z" fill="#8C8885" stroke="#1B1209" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M74 18 L86 9 L84 22 Z" fill="#FFB3C0"/>
+      <ellipse cx="62" cy="40" rx="30" ry="26" fill="#FFFFFF"/>
+      <g clip-path="url(#sc-head)">
+        <path d="M28 8 H96 V48 C91 43 85 41 81 45 C79 37 75 33 70 34 Q66 30 64 17 L60 17 Q58 30 54 34 C49 33 45 37 43 45 C39 41 33 43 28 48 Z" fill="#8C8885"/>
+        <path d="M49 21 Q53 25 53 30 M75 21 Q71 25 71 30 M42 28 Q46 31 46 35 M82 28 Q78 31 78 35 M33 40 L40 41 M91 40 L84 41" fill="none" stroke="#55504D" stroke-width="2.8" stroke-linecap="round"/>
+      </g>
+      <ellipse cx="62" cy="40" rx="30" ry="26" fill="none" stroke="#1B1209" stroke-width="4"/>
+      <ellipse cx="51" cy="42" rx="6.5" ry="7" fill="#232A36"/>
+      <ellipse cx="73" cy="42" rx="6.5" ry="7" fill="#232A36"/>
+      <circle cx="53" cy="39.5" r="2.4" fill="#FFFFFF"/>
+      <circle cx="75" cy="39.5" r="2.4" fill="#FFFFFF"/>
+      <circle cx="49.5" cy="45" r="1.1" fill="#FFFFFF" opacity=".7"/>
+      <circle cx="71.5" cy="45" r="1.1" fill="#FFFFFF" opacity=".7"/>
+      <path d="M59 50 L65 50 L62 54 Z" fill="#FF9AAE" stroke="#1B1209" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M30 49 L43 51 M31 56 L43 54 M94 49 L81 51 M93 56 L81 54" fill="none" stroke="#1B1209" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M46 76 C47 68 52 63 57 60 M78 76 C77 68 72 63 67 60" fill="none" stroke="#1B1209" stroke-width="13" stroke-linecap="round"/>
+      <path d="M46 76 C47 68 52 63 57 60 M78 76 C77 68 72 63 67 60" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
+      <ellipse cx="57.5" cy="59" rx="6.5" ry="6" fill="#FFFFFF" stroke="#1B1209" stroke-width="3.5"/>
+      <ellipse cx="66.5" cy="59" rx="6.5" ry="6" fill="#FFFFFF" stroke="#1B1209" stroke-width="3.5"/>
+      <path d="M55 61 L55 63.5 M59 61.5 L59 64 M65 61.5 L65 64 M69 61 L69 63.5" fill="none" stroke="#C9C2BC" stroke-width="1.4" stroke-linecap="round"/>
     </symbol>
   </defs>
 </svg>
@@ -519,7 +526,7 @@
     win: () => [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, k) => tone(f, .2, 'triangle', .18, k * .12)),
     lose: () => [392, 370, 349, 311].forEach((f, k) => tone(f, .4, 'sawtooth', .1, k * .28, f * .97)),
     honk: () => { tone(440, .12, 'square', .1, 0, 380); tone(440, .12, 'square', .1, .16, 380); },
-    bubbles: () => { for (let k = 0; k < 7; k++) { const f = 280 + Math.random() * 320; tone(f, .09, 'sine', .14, k * .075, f * 2.6); } },
+    scuba: () => { tone(620, .13, 'triangle', .2, 0, 980); tone(880, .2, 'triangle', .2, .15, 520); },
   };
   function buzz(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
   function say(text) {
@@ -618,21 +625,12 @@
   const anim = (i, cls) => restartAnim(cells[i], cls, 750);
   const boing = d => restartAnim(cast.children[d - 1], 'boing', 650);
   function scubaDive(i) {
-    restartAnim(diver, 'swim', 2050);
-    sfx.bubbles();
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const box = boardbox.getBoundingClientRect(), r = cells[i].getBoundingClientRect();
-    for (let k = 0; k < 6; k++) {
-      const b = document.createElement('span'); b.className = 'bubble';
-      b.style.left = (r.left - box.left + r.width / 2 - 6 + (Math.random() * 24 - 12)) + 'px';
-      b.style.top = (r.top - box.top + r.height / 2 - 6) + 'px';
-      b.style.animationDelay = (k * .12) + 's';
-      boardbox.appendChild(b); setTimeout(() => b.remove(), 2200);
-    }
+    restartAnim(diver, 'swim', 1950);
+    sfx.scuba();
   }
   function confetti() {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const pieces = CH.map(c => c.e).concat(['🤿', '🐱', '🫧']);
+    const pieces = CH.map(c => c.e).concat(['🐱', '🐾']);
     for (let k = 0; k < 60; k++) {
       const s = document.createElement('span'); s.className = 'confetti';
       s.textContent = pieces[k % pieces.length];
@@ -731,7 +729,7 @@
       localStorage.setItem(k, best);
     } catch (e) {}
     save(); render();
-    sfx.win(); setTimeout(sfx.bubbles, 900); confetti(); buzz([40, 40, 40, 40, 120]);
+    sfx.win(); setTimeout(sfx.scuba, 900); confetti(); buzz([40, 40, 40, 40, 120]);
     say('Hai vinto! Sei il re del brainrot!');
     showCard(`<div class="big-e">🦈${CAT}🐊</div><h2>Hai vinto!</h2><p>Sei ufficialmente il re del brainrot. Scuba Cat è fiero di te.</p>
       <dl><div><dt>Tempo</dt><dd>${fmt(S.elapsed)}</dd></div><div><dt>Errori</dt><dd>${S.mistakes}</dd></div><div><dt>Record</dt><dd>${best != null ? fmt(best) : '—'}</dd></div></dl>
@@ -775,7 +773,7 @@
   $('erase').addEventListener('click', erase);
   $('notes').addEventListener('click', () => { S.notesMode = !S.notesMode; save(); render(); });
   $('hint').addEventListener('click', hint);
-  mascot.addEventListener('click', () => { audio(); sfx.bubbles(); restartAnim(mascot, 'flip', 850); caption('SCUBA!', 'scuba'); });
+  mascot.addEventListener('click', () => { audio(); sfx.scuba(); restartAnim(mascot, 'flip', 850); caption('SCUBA!', 'scuba'); });
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && menu.classList.contains('open')) return setMenu(false);
