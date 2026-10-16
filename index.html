@@ -8,7 +8,6 @@
 <style>
   :root {
     --sugo: #E0262E;
-    --sugo-deep: #A8101A;
     --basilico: #0F8A43;
     --ink: #1B1209;
     --crema: #FFC21A;
@@ -18,6 +17,7 @@
     --wrongbg: #FFD6D9;
     --muted: #6E5B49;
     --line: #DCCFC0;
+    --mare: #8ED8F0;
     --emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
     --bw: min(calc(100vw - 32px), 540px);
     color-scheme: light;
@@ -34,16 +34,22 @@
       linear-gradient(90deg, rgba(224, 38, 46, .30) 50%, transparent 0),
       linear-gradient(rgba(224, 38, 46, .30) 50%, transparent 0);
     background-size: 56px 56px;
+    -webkit-tap-highlight-color: transparent;
   }
-  button { font: inherit; color: inherit; cursor: pointer; }
+  button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; -webkit-user-select: none; user-select: none; }
   button:focus-visible { outline: 3px solid var(--sugo); outline-offset: 2px; }
 
   .app { max-width: 940px; margin: 0 auto; padding-inline: 16px; padding-block: 18px 48px; display: grid; gap: 18px; }
 
   /* ---------- masthead ---------- */
-  .masthead { display: grid; justify-items: center; gap: 10px; text-align: center; }
+  .masthead { display: flex; justify-content: center; align-items: center; gap: 18px; }
+  .brand { display: grid; justify-items: center; gap: 10px; text-align: center; }
+  .mascot { width: 104px; height: 104px; flex: none; animation: bob 3s ease-in-out infinite; overflow: visible; }
+  .mascot.flip { animation: flip .8s ease-in-out; }
+  @keyframes bob { 0%,100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-7px) rotate(5deg); } }
+  @keyframes flip { 0% { transform: rotate(0) scale(1); } 50% { transform: rotate(200deg) scale(1.3); } 100% { transform: rotate(360deg) scale(1); } }
   .logo {
-    margin: 0; font: 400 clamp(40px, 9vw, 78px)/.9 "Lilita One", "Arial Black", sans-serif;
+    margin: 0; font: 400 clamp(40px, 8vw, 74px)/.9 "Lilita One", "Arial Black", sans-serif;
     letter-spacing: .01em; transform: rotate(-2.5deg);
     -webkit-text-stroke: 7px var(--ink); paint-order: stroke fill;
     text-shadow: 5px 6px 0 var(--ink);
@@ -62,16 +68,21 @@
   .cast span.boing { animation: boing .6s ease-out; }
   @keyframes wobble { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg) translateY(-3px); } }
   @keyframes boing { 0% { transform: scale(1); } 30% { transform: scale(1.9) translateY(-10px) rotate(-15deg); } 100% { transform: scale(1); } }
+  .menu-btn {
+    display: none; border: 3px solid var(--ink); border-radius: 12px; background: var(--piatto);
+    box-shadow: 3px 3px 0 var(--ink); width: 48px; height: 48px; place-items: center; padding: 0;
+  }
+  .menu-btn svg { width: 24px; height: 24px; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
 
-  /* ---------- toolbar ---------- */
+  /* ---------- toolbar / settings ---------- */
   .toolbar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
+  .sheet-head, .sheet-label { display: none; }
+  .toggles { display: contents; }
   .seg {
     display: inline-flex; background: var(--piatto); border: 3px solid var(--ink); border-radius: 999px;
     box-shadow: 3px 3px 0 var(--ink); overflow: hidden;
   }
-  .seg button {
-    border: 0; background: transparent; padding: 8px 13px; font-weight: 900; font-size: 13.5px; white-space: nowrap;
-  }
+  .seg button { border: 0; background: transparent; padding: 8px 13px; font-weight: 900; font-size: 13.5px; white-space: nowrap; }
   .seg button + button { border-left: 2px solid var(--ink); }
   .seg button[aria-pressed="true"] { background: var(--ink); color: var(--crema); }
   .seg button[data-diff="estremo"][aria-pressed="true"] { background: var(--sugo); color: var(--piatto); }
@@ -81,7 +92,8 @@
   }
   .pill[aria-pressed="false"] { background: #EFE7DD; color: var(--muted); text-decoration: line-through; }
   .pill.go { background: var(--basilico); color: var(--piatto); }
-  .pill:active, .seg:active, .tile:active, .ctrl:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+  .pill:active, .tile:active, .ctrl:active, .menu-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+  .scrim { position: fixed; inset: 0; z-index: 39; background: rgba(27, 18, 9, .55); }
 
   /* ---------- play area ---------- */
   .play { display: grid; gap: 20px; justify-items: center; }
@@ -117,10 +129,7 @@
   .cell.sel { background: var(--crema); box-shadow: inset 0 0 0 3px var(--ink); }
   .cell.wrong { background: var(--wrongbg); }
   .cell.wrong.sel { background: #FFB3B9; }
-  .v {
-    font: 400 calc(var(--bw) / 9 * .56)/1 "Lilita One", var(--emoji);
-    font-variant-numeric: tabular-nums; pointer-events: none;
-  }
+  .v { font: 400 calc(var(--bw) / 9 * .56)/1 "Lilita One", var(--emoji); font-variant-numeric: tabular-nums; pointer-events: none; }
   .chars .v { font-family: var(--emoji); font-size: calc(var(--bw) / 9 * .56); }
   .cell.user .v { color: var(--basilico); }
   .cell.hinted .v { color: #B07800; }
@@ -130,7 +139,7 @@
     background: var(--basilico); border: 1.5px solid var(--ink);
   }
   .chars .cell.wrong::after { background: var(--sugo); }
-  .chars .cell.hinted::after { background: var(--crema); }
+  .chars .cell.hinted::after { background: var(--mare); }
   .notes {
     position: absolute; inset: 3%; display: grid; grid-template-columns: repeat(3, 1fr); place-items: center;
     font: 900 calc(var(--bw) / 9 * .22)/1 "Nunito", var(--emoji); color: var(--muted); pointer-events: none;
@@ -144,13 +153,31 @@
   @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
   @keyframes flash { 0% { background: var(--basilico); } 100% { background: var(--piatto); } }
 
+  .lane { position: absolute; inset: 0; overflow: hidden; border-radius: 14px; pointer-events: none; z-index: 3; }
+  .diver { position: absolute; top: 18%; left: 0; width: calc(var(--bw) * .3); aspect-ratio: 1; opacity: 0; }
+  .diver svg { width: 100%; height: 100%; overflow: visible; }
+  .diver.swim { animation: swim 2s ease-in-out forwards; }
+  @keyframes swim {
+    0% { opacity: 1; transform: translate(-110%, 0) rotate(14deg); }
+    25% { transform: translate(60%, -14%) rotate(-8deg); }
+    50% { transform: translate(150%, 10%) rotate(10deg); }
+    75% { transform: translate(240%, -10%) rotate(-8deg); }
+    100% { opacity: 1; transform: translate(360%, 0) rotate(14deg); }
+  }
+  .bubble {
+    position: absolute; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink);
+    background: var(--mare); pointer-events: none; z-index: 3; animation: rise 1.4s ease-out forwards;
+  }
+  @keyframes rise { 0% { opacity: .9; transform: translateY(0) scale(.5); } 100% { opacity: 0; transform: translateY(-90px) scale(1.2); } }
+
   .caption {
-    position: absolute; left: 50%; top: 40%; width: 96%; text-align: center; pointer-events: none; z-index: 3;
+    position: absolute; left: 50%; top: 40%; width: 96%; text-align: center; pointer-events: none; z-index: 4;
     font: 400 calc(var(--bw) * .068)/1.05 "Anton", "Impact", sans-serif; text-transform: uppercase; letter-spacing: .01em;
     color: var(--piatto); -webkit-text-stroke: 7px var(--ink); paint-order: stroke fill; text-wrap: balance;
     opacity: 0; transform: translate(-50%, -50%) rotate(var(--tilt, -4deg));
   }
   .caption.big { font-size: calc(var(--bw) * .1); color: var(--crema); }
+  .caption.scuba { font-size: calc(var(--bw) * .12); color: var(--mare); top: 72%; }
   .caption.bad { color: #FF5A61; }
   .caption.show { animation: capIn 1.5s ease-out forwards; }
   @keyframes capIn {
@@ -161,22 +188,21 @@
     100% { opacity: 0; transform: translate(-50%, -75%) rotate(var(--tilt)) scale(1); }
   }
 
-  .overlay {
-    position: absolute; inset: 0; z-index: 4; border-radius: 14px; display: grid; place-items: center; padding: 18px;
-    background: rgba(27, 18, 9, .8);
-  }
+  .overlay { position: absolute; inset: 0; z-index: 5; border-radius: 14px; display: grid; place-items: center; padding: 14px; background: rgba(27, 18, 9, .8); }
   .card {
     background: var(--piatto); border: 4px solid var(--ink); border-radius: 16px; box-shadow: 6px 6px 0 var(--sugo);
-    padding: 20px; text-align: center; display: grid; gap: 10px; max-width: 360px; transform: rotate(-1.5deg);
+    padding: 18px; text-align: center; display: grid; gap: 9px; max-width: 360px; transform: rotate(-1.5deg);
   }
-  .card .big-e { font: 54px/1 var(--emoji); }
-  .card h2 { margin: 0; font: 400 34px/1 "Lilita One", sans-serif; text-wrap: balance; }
+  .card .big-e { font: 44px/1 var(--emoji); display: flex; justify-content: center; align-items: center; gap: 4px; }
+  .card .big-e svg { width: 84px; height: 84px; }
+  .card h2 { margin: 0; font: 400 32px/1 "Lilita One", sans-serif; text-wrap: balance; }
   .card p { margin: 0; color: var(--muted); }
   .card dl { margin: 4px 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .card dl div { background: var(--peer); border: 2px solid var(--ink); border-radius: 10px; padding: 6px; }
   .card dt { font: 900 10px/1 "Nunito", sans-serif; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
   .card dd { margin: 3px 0 0; font: 400 20px/1 "Lilita One", sans-serif; font-variant-numeric: tabular-nums; }
   .card .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .card .pill { padding: 10px 16px; }
 
   /* ---------- side ---------- */
   .side { width: var(--bw); display: grid; gap: 14px; align-content: start; }
@@ -190,10 +216,7 @@
   .tile .pd { font: 400 32px/1 "Lilita One", sans-serif; }
   .tile.num .pe { font-size: 15px; }
   .tile .pn { font: 900 10.5px/1.1 "Nunito", sans-serif; text-align: center; text-wrap: balance; }
-  .tile .pc {
-    position: absolute; top: 4px; right: 6px; font: 900 11px/1 "Nunito", sans-serif; color: var(--muted);
-    font-variant-numeric: tabular-nums;
-  }
+  .tile .pc { position: absolute; top: 4px; right: 6px; font: 900 11px/1 "Nunito", sans-serif; color: var(--muted); font-variant-numeric: tabular-nums; }
   .tile.done { opacity: .35; }
   .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
   .ctrl {
@@ -202,19 +225,16 @@
     font: 900 12px/1 "Nunito", sans-serif;
   }
   .ctrl svg { width: 22px; height: 22px; fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .ctrl svg.sc { width: 26px; height: 26px; margin-top: -3px; margin-bottom: -1px; stroke: none; }
   .ctrl[aria-pressed="true"] { background: var(--crema); }
+  .ctrl#hint { background: var(--mare); }
   .ctrl .badge {
     position: absolute; top: -9px; right: -7px; min-width: 22px; height: 22px; border-radius: 999px; background: var(--sugo);
     color: var(--piatto); border: 2px solid var(--ink); font: 900 11.5px/18px "Nunito", sans-serif;
   }
   .ctrl:disabled { opacity: .45; cursor: not-allowed; }
-  .keys {
-    margin: 0; background: var(--ink); color: #F4E7D3; border-radius: 10px; padding: 9px 12px;
-    font-size: 12.5px; line-height: 1.5;
-  }
-  .keys kbd {
-    font: 900 11px/1 "Nunito", sans-serif; background: var(--crema); color: var(--ink); border-radius: 4px; padding: 2px 5px;
-  }
+  .keys { margin: 0; background: var(--ink); color: #F4E7D3; border-radius: 10px; padding: 9px 12px; font-size: 12.5px; line-height: 1.5; }
+  .keys kbd { font: 900 11px/1 "Nunito", sans-serif; background: var(--crema); color: var(--ink); border-radius: 4px; padding: 2px 5px; }
 
   .confetti { position: fixed; top: -60px; z-index: 50; pointer-events: none; font: 30px/1 var(--emoji); animation: fall linear forwards; }
   @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
@@ -223,15 +243,48 @@
     .play { grid-template-columns: auto 1fr; align-items: start; justify-items: stretch; }
     .side { width: auto; padding-top: 58px; }
   }
+
+  /* ---------- phone ---------- */
   @media (max-width: 620px) {
+    :root {
+      --bw: max(260px, min(calc(100vw - 32px), calc(100vh - 300px), 540px));
+      --bw: max(260px, min(calc(100vw - 32px), calc(100dvh - 300px), 540px));
+    }
+    .app { padding-block: 10px 24px; gap: 12px; }
+    .masthead { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; justify-content: stretch; }
+    .mascot { width: 54px; height: 54px; }
+    .brand { justify-items: start; text-align: left; }
+    .logo { font-size: 27px; -webkit-text-stroke: 5px var(--ink); text-shadow: 3px 3px 0 var(--ink); flex-direction: column; align-items: flex-start; transform: rotate(-2deg); }
+    .tag, .cast { display: none; }
+    .menu-btn { display: inline-grid; }
+
+    .toolbar {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; gap: 10px;
+      background: var(--piatto); border-top: 4px solid var(--ink); border-radius: 22px 22px 0 0;
+      padding: 16px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+      transform: translateY(110%); transition: transform .25s ease-out; max-height: 85vh; overflow-y: auto;
+    }
+    .toolbar.open { transform: none; }
+    .sheet-head { display: flex; justify-content: space-between; align-items: center; }
+    .sheet-head b { font: 400 24px/1 "Lilita One", sans-serif; }
+    .sheet-label { display: block; font: 900 11px/1 "Nunito", sans-serif; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-bottom: -4px; }
+    .seg { display: flex; width: 100%; }
+    .seg button { flex: 1; padding: 12px 4px; font-size: 13px; }
+    .toggles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .toolbar .pill { padding: 12px; font-size: 14.5px; }
+
+    .stats { padding: 6px 12px; }
+    .stat span { font-size: 18px; }
+    .side { gap: 12px; }
+    .controls { order: -1; gap: 8px; }
+    .ctrl { padding: 7px 2px 6px; font-size: 11.5px; }
     .pad { grid-template-columns: repeat(9, 1fr); gap: 4px; }
-    .tile { min-height: 0; padding: 7px 0 5px; border-width: 2px; border-radius: 9px; box-shadow: 2px 2px 0 var(--ink); }
+    .tile { min-height: 58px; padding: 6px 0 5px; gap: 4px; border-width: 2px; border-radius: 10px; box-shadow: 2px 2px 0 var(--ink); }
     .tile .pn { display: none; }
-    .tile .pe { font-size: 22px; }
-    .tile .pd { font-size: 24px; }
+    .tile .pe { font-size: 23px; }
+    .tile .pd { font-size: 25px; }
     .tile.num .pe { font-size: 11px; }
-    .tile .pc { position: static; font-size: 10px; }
-    .seg button { padding: 7px 10px; font-size: 12.5px; }
+    .tile .pc { position: static; font-size: 10.5px; order: 3; }
     .keys { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -240,26 +293,71 @@
   }
 </style>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <clipPath id="sc-head"><ellipse cx="60" cy="72" rx="40" ry="35"/></clipPath>
+    <symbol id="scuba" viewBox="0 0 124 124">
+      <path d="M98 78 C112 78 112 68 112 58 L112 16" fill="none" stroke="#1B1209" stroke-width="15" stroke-linecap="round"/>
+      <path d="M98 78 C112 78 112 68 112 58 L112 16" fill="none" stroke="#FFC21A" stroke-width="8" stroke-linecap="round"/>
+      <rect x="104" y="6" width="16" height="12" rx="4" fill="#E0262E" stroke="#1B1209" stroke-width="3"/>
+      <path d="M24 56 L27 14 L54 40 Z" fill="#F28C28" stroke="#1B1209" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M31 27 L32 43 L44 41 Z" fill="#FFB3C0"/>
+      <path d="M66 40 L93 14 L96 56 Z" fill="#4A4038" stroke="#1B1209" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M89 27 L76 41 L88 43 Z" fill="#FFB3C0"/>
+      <ellipse cx="60" cy="72" rx="40" ry="35" fill="#FFFFFF"/>
+      <g clip-path="url(#sc-head)">
+        <ellipse cx="28" cy="52" rx="24" ry="18" fill="#F28C28"/>
+        <ellipse cx="94" cy="50" rx="22" ry="20" fill="#4A4038"/>
+        <ellipse cx="84" cy="106" rx="16" ry="9" fill="#F28C28"/>
+      </g>
+      <ellipse cx="60" cy="72" rx="40" ry="35" fill="none" stroke="#1B1209" stroke-width="4"/>
+      <path d="M19 68 L28 66 M92 66 L101 68" fill="none" stroke="#1B1209" stroke-width="7" stroke-linecap="round"/>
+      <rect x="27" y="52" width="66" height="30" rx="13" fill="#8ED8F0" stroke="#1B1209" stroke-width="4"/>
+      <path d="M60 52 L60 63" fill="none" stroke="#1B1209" stroke-width="3"/>
+      <circle cx="45" cy="68" r="6" fill="#1B1209"/>
+      <circle cx="75" cy="68" r="6" fill="#1B1209"/>
+      <circle cx="47" cy="66" r="2" fill="#FFFFFF"/>
+      <circle cx="77" cy="66" r="2" fill="#FFFFFF"/>
+      <path d="M34 61 Q37 57 43 57" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+      <path d="M56 87 L64 87 L60 92 Z" fill="#FF8FA3" stroke="#1B1209" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M52 95 Q60 109 68 95 Z" fill="#7A1E1E" stroke="#1B1209" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M21 88 L40 90 M21 96 L40 94 M99 88 L80 90 M99 96 L80 94" fill="none" stroke="#1B1209" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
 <div class="app">
   <header class="masthead">
-    <h1 class="logo"><span><span class="a">Sudo</span><span class="b">kini</span></span> <span class="c">Brainrotini</span></h1>
-    <p class="tag">Il sudoku più brainrot d'Italia · nove personaggi, zero neuroni</p>
-    <div class="cast" id="cast" aria-hidden="true"></div>
+    <svg class="mascot" id="mascot" role="img" aria-label="Scuba Cat"><use href="#scuba"/></svg>
+    <div class="brand">
+      <h1 class="logo"><span><span class="a">Sudo</span><span class="b">kini</span></span> <span class="c">Brainrotini</span></h1>
+      <p class="tag">Il sudoku più brainrot d'Italia · nove personaggi, zero neuroni</p>
+      <div class="cast" id="cast" aria-hidden="true"></div>
+    </div>
+    <button class="menu-btn" id="menubtn" aria-label="Impostazioni" aria-expanded="false" aria-controls="menu">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
   </header>
 
-  <nav class="toolbar" aria-label="Impostazioni partita">
+  <div class="scrim" id="scrim" hidden></div>
+  <nav class="toolbar" id="menu" aria-label="Impostazioni partita">
+    <div class="sheet-head"><b>Impostazioni</b><button class="pill" id="menuclose">Chiudi</button></div>
+    <span class="sheet-label">Difficoltà</span>
     <div class="seg" id="diff" aria-label="Difficoltà">
       <button data-diff="facile">Facile</button>
       <button data-diff="medio">Medio</button>
       <button data-diff="difficile">Difficile</button>
       <button data-diff="estremo">Estremo 💀</button>
     </div>
+    <span class="sheet-label">Simboli</span>
     <div class="seg" id="mode" aria-label="Simboli">
       <button data-mode="chars">🦈 Personaggi</button>
       <button data-mode="nums">123 Numeri</button>
     </div>
-    <button class="pill" id="snd" aria-pressed="true">Suoni</button>
-    <button class="pill" id="voice" aria-pressed="true">Narratore</button>
+    <div class="toggles">
+      <button class="pill" id="snd" aria-pressed="true">Suoni</button>
+      <button class="pill" id="voice" aria-pressed="false">Narratore</button>
+    </div>
     <button class="pill go" id="newgame">Nuova partita</button>
   </nav>
 
@@ -270,8 +368,9 @@
         <div class="stat"><b>Errori</b><span id="mist">0/3</span></div>
         <div class="stat"><b>Livello</b><span id="lvl">Medio</span></div>
       </div>
-      <div class="board-box">
+      <div class="board-box" id="boardbox">
         <div class="board" id="board" role="grid" aria-label="Griglia sudoku"></div>
+        <div class="lane" aria-hidden="true"><div class="diver" id="diver"><svg><use href="#scuba"/></svg></div></div>
         <div class="caption" id="caption" aria-live="polite"></div>
         <div class="overlay" id="overlay" hidden>
           <div class="card" id="card"></div>
@@ -285,7 +384,7 @@
         <button class="ctrl" id="undo"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Annulla</button>
         <button class="ctrl" id="erase"><svg viewBox="0 0 24 24"><path d="m7 21-4-4L14 6l6 6-9 9H7z"/><path d="M21 21H11"/><path d="m9 11 6 6"/></svg>Cancella</button>
         <button class="ctrl" id="notes" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M17 3a2.8 2.8 0 0 1 4 4L8 20l-5 1 1-5z"/></svg>Note</button>
-        <button class="ctrl" id="hint"><svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>Aiuto<span class="badge" id="hintn">3</span></button>
+        <button class="ctrl" id="hint"><svg class="sc" viewBox="0 0 124 124"><use href="#scuba"/></svg>Scuba aiuto<span class="badge" id="hintn">3</span></button>
       </div>
       <p class="keys">Tastiera: <kbd>1</kbd>–<kbd>9</kbd> metti · <kbd>←↑→↓</kbd> muovi · <kbd>Canc</kbd> cancella · <kbd>N</kbd> note · <kbd>H</kbd> aiuto · <kbd>Z</kbd> annulla · <kbd>M</kbd> personaggi/numeri</p>
     </aside>
@@ -366,7 +465,7 @@
 
   /* ---------- state ---------- */
   let S = null, undoStack = [];
-  const prefs = { mode: 'chars', sound: true, voice: true };
+  const prefs = { mode: 'chars', sound: true, voice: false, v2: true };
 
   function newGame(diff) {
     const { puz, sol } = generate(diff);
@@ -381,14 +480,19 @@
   function load() {
     try {
       const d = JSON.parse(localStorage.getItem(KEY));
-      if (d && d.S && d.S.sol && d.S.sol.length === 81) { S = d.S; Object.assign(prefs, d.prefs || {}); return true; }
+      if (d && d.prefs) {
+        // Players from before the narrator went off by default start with it muted once.
+        if (!d.prefs.v2) { d.prefs.voice = false; d.prefs.v2 = true; }
+        Object.assign(prefs, d.prefs);
+      }
+      if (d && d.S && d.S.sol && d.S.sol.length === 81) { S = d.S; return true; }
     } catch (e) {}
     return false;
   }
   const isFixed = i => S.puz[i] !== 0 || S.hinted[i];
   const isCorrect = i => S.values[i] === S.sol[i];
 
-  /* ---------- audio ---------- */
+  /* ---------- audio & haptics ---------- */
   let ac = null;
   function audio() {
     if (!prefs.sound) return null;
@@ -415,13 +519,15 @@
     win: () => [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, k) => tone(f, .2, 'triangle', .18, k * .12)),
     lose: () => [392, 370, 349, 311].forEach((f, k) => tone(f, .4, 'sawtooth', .1, k * .28, f * .97)),
     honk: () => { tone(440, .12, 'square', .1, 0, 380); tone(440, .12, 'square', .1, .16, 380); },
+    bubbles: () => { for (let k = 0; k < 7; k++) { const f = 280 + Math.random() * 320; tone(f, .09, 'sine', .14, k * .075, f * 2.6); } },
   };
+  function buzz(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
   function say(text) {
     if (!prefs.voice) return;
     try {
       const s = window.speechSynthesis; if (!s) return;
       s.cancel();
-      const u = new SpeechSynthesisUtterance(text.replace(/[💀✈️]/gu, ''));
+      const u = new SpeechSynthesisUtterance(text);
       u.lang = 'it-IT';
       const v = s.getVoices().find(v => /^it/i.test(v.lang)); if (v) u.voice = v;
       u.rate = 1.08; u.pitch = .75;
@@ -432,6 +538,8 @@
   /* ---------- dom ---------- */
   const $ = id => document.getElementById(id);
   const board = $('board'), pad = $('pad'), cap = $('caption'), overlay = $('overlay'), card = $('card'), cast = $('cast');
+  const menu = $('menu'), scrim = $('scrim'), mascot = $('mascot'), diver = $('diver'), boardbox = $('boardbox');
+  const phone = matchMedia('(max-width: 620px)');
   const cells = [];
   for (let i = 0; i < 81; i++) {
     const b = document.createElement('button');
@@ -506,13 +614,28 @@
     cap.classList.add('show');
     clearTimeout(capTimer); capTimer = setTimeout(() => cap.classList.remove('show'), 1550);
   }
-  function anim(i, cls) { const c = cells[i]; c.classList.remove(cls); void c.offsetWidth; c.classList.add(cls); setTimeout(() => c.classList.remove(cls), 750); }
-  function boing(d) { const s = cast.children[d - 1]; s.classList.remove('boing'); void s.offsetWidth; s.classList.add('boing'); setTimeout(() => s.classList.remove('boing'), 650); }
+  function restartAnim(el, cls, ms) { el.classList.remove(cls); void el.getBoundingClientRect(); el.classList.add(cls); setTimeout(() => el.classList.remove(cls), ms); }
+  const anim = (i, cls) => restartAnim(cells[i], cls, 750);
+  const boing = d => restartAnim(cast.children[d - 1], 'boing', 650);
+  function scubaDive(i) {
+    restartAnim(diver, 'swim', 2050);
+    sfx.bubbles();
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const box = boardbox.getBoundingClientRect(), r = cells[i].getBoundingClientRect();
+    for (let k = 0; k < 6; k++) {
+      const b = document.createElement('span'); b.className = 'bubble';
+      b.style.left = (r.left - box.left + r.width / 2 - 6 + (Math.random() * 24 - 12)) + 'px';
+      b.style.top = (r.top - box.top + r.height / 2 - 6) + 'px';
+      b.style.animationDelay = (k * .12) + 's';
+      boardbox.appendChild(b); setTimeout(() => b.remove(), 2200);
+    }
+  }
   function confetti() {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const pieces = CH.map(c => c.e).concat(['🤿', '🐱', '🫧']);
     for (let k = 0; k < 60; k++) {
       const s = document.createElement('span'); s.className = 'confetti';
-      s.textContent = CH[k % 9].e;
+      s.textContent = pieces[k % pieces.length];
       s.style.left = Math.random() * 100 + 'vw';
       s.style.fontSize = (20 + Math.random() * 26) + 'px';
       s.style.animationDuration = (2.2 + Math.random() * 2.4) + 's';
@@ -523,13 +646,14 @@
 
   function afterCorrect(i, d) {
     for (const j of PEERS[i]) S.notes[j] &= ~(1 << d);
-    anim(i, 'pop'); boing(d); sfx.place(d);
+    anim(i, 'pop'); boing(d); sfx.place(d); buzz(12);
     const groups = [ROWS[ROW[i]], COLS[COL[i]], BOXES[BOX[i]]].filter(g => g.every(isCorrect));
     const allOfDigit = S.values.filter((v, k) => v === d && isCorrect(k)).length === 9;
-    if (S.values.every((v, k) => v === S.sol[k])) return win();
+    if (S.values.every((v, k) => v === S.sol[k])) { win(); return 'won'; }
     if (groups.length) {
       groups.flat().forEach(j => anim(j, 'flash'));
-      setTimeout(sfx.tung, 120); boing(3);
+      setTimeout(sfx.tung, 120); boing(3); buzz([20, 30, 20, 30, 20]);
+      restartAnim(mascot, 'flip', 850);
       const t = groups.length > 1 ? 'COMBO! Tung tung tung SAHUR!' : 'Tung tung tung SAHUR!';
       caption(t, 'big'); say(t);
     } else if (allOfDigit) {
@@ -557,7 +681,7 @@
     S.values[i] = d; S.notes[i] = 0;
     if (d === S.sol[i]) afterCorrect(i, d);
     else {
-      S.mistakes++; sfx.wrong(); anim(i, 'shake');
+      S.mistakes++; sfx.wrong(); anim(i, 'shake'); buzz([60, 40, 60]);
       const t = INSULTS[Math.floor(Math.random() * INSULTS.length)];
       if (S.mistakes >= MAX_MISTAKES) { render(); return lose(); }
       caption(t, 'bad'); say(t);
@@ -578,7 +702,7 @@
   function hint() {
     audio();
     if (S.status !== 'playing') return;
-    if (S.hints <= 0) { caption('Aiuti finiti, bombardiro!', 'bad'); return; }
+    if (S.hints <= 0) { caption('Scuba Cat è stanco!', 'bad'); return; }
     let i = S.sel;
     if (i < 0 || isFixed(i) || isCorrect(i)) {
       const open = [...Array(81).keys()].filter(k => !isCorrect(k));
@@ -586,8 +710,8 @@
       i = open[Math.floor(Math.random() * open.length)];
     }
     S.hints--; S.sel = i; S.values[i] = S.sol[i]; S.notes[i] = 0; S.hinted[i] = true;
-    afterCorrect(i, S.sol[i]);
-    if (S.status === 'playing') { caption(`Aiutino: ${CH[S.sol[i] - 1].n}!`); }
+    scubaDive(i);
+    if (afterCorrect(i, S.sol[i]) !== 'won') caption('SCUBA!', 'scuba');
     save(); render();
   }
   function move(dr, dc) {
@@ -597,6 +721,7 @@
   }
 
   function showCard(html) { card.innerHTML = html; overlay.hidden = false; card.querySelector('button')?.focus(); }
+  const CAT = '<svg viewBox="0 0 124 124" aria-hidden="true"><use href="#scuba"/></svg>';
   function win() {
     S.status = 'won';
     let best = null;
@@ -606,14 +731,16 @@
       localStorage.setItem(k, best);
     } catch (e) {}
     save(); render();
-    sfx.win(); confetti(); say('Hai vinto! Sei il re del brainrot!');
-    showCard(`<div class="big-e">🦈🐊🪵</div><h2>Hai vinto!</h2><p>Sei ufficialmente il re del brainrot. Tralalero è fiero di te.</p>
+    sfx.win(); setTimeout(sfx.bubbles, 900); confetti(); buzz([40, 40, 40, 40, 120]);
+    say('Hai vinto! Sei il re del brainrot!');
+    showCard(`<div class="big-e">🦈${CAT}🐊</div><h2>Hai vinto!</h2><p>Sei ufficialmente il re del brainrot. Scuba Cat è fiero di te.</p>
       <dl><div><dt>Tempo</dt><dd>${fmt(S.elapsed)}</dd></div><div><dt>Errori</dt><dd>${S.mistakes}</dd></div><div><dt>Record</dt><dd>${best != null ? fmt(best) : '—'}</dd></div></dl>
       <div class="row"><button class="pill go" data-act="new">Nuova partita</button></div>`);
   }
   function lose() {
     S.status = 'lost'; save();
-    sfx.lose(); say('Mamma mia! Bombardiro ha bombardato la tua partita.');
+    sfx.lose(); buzz([200, 80, 200]);
+    say('Mamma mia! Bombardiro ha bombardato la tua partita.');
     showCard(`<div class="big-e">🐊✈️💥</div><h2>Mamma mia!</h2><p>Tre errori. Bombardiro Crocodilo ha bombardato la tua partita.</p>
       <div class="row"><button class="pill" data-act="retry">Riprova questo</button><button class="pill go" data-act="new">Nuova partita</button></div>`);
   }
@@ -623,18 +750,36 @@
     if (a === 'retry') restart();
   });
 
+  /* ---------- settings sheet (phones) ---------- */
+  function setMenu(open) {
+    open = open && phone.matches;
+    menu.classList.toggle('open', open);
+    scrim.hidden = !open;
+    menu.inert = phone.matches && !open;
+    $('menubtn').setAttribute('aria-expanded', String(open));
+    if (open) $('menuclose').focus();
+  }
+  const closeOnPhone = () => { if (phone.matches) setMenu(false); };
+  $('menubtn').addEventListener('click', () => setMenu(true));
+  $('menuclose').addEventListener('click', () => { setMenu(false); $('menubtn').focus(); });
+  scrim.addEventListener('click', () => setMenu(false));
+  phone.addEventListener('change', () => setMenu(false));
+
   /* ---------- wiring ---------- */
-  $('diff').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { audio(); newGame(b.dataset.diff); caption(DIFFS[b.dataset.diff].label + '!', 'big'); } });
-  $('mode').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { prefs.mode = b.dataset.mode; save(); renderAll(); } });
+  $('diff').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { audio(); newGame(b.dataset.diff); closeOnPhone(); caption(DIFFS[b.dataset.diff].label + '!', 'big'); } });
+  $('mode').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { prefs.mode = b.dataset.mode; save(); renderAll(); closeOnPhone(); } });
   $('snd').addEventListener('click', () => { prefs.sound = !prefs.sound; save(); render(); if (prefs.sound) sfx.place(5); });
   $('voice').addEventListener('click', () => { prefs.voice = !prefs.voice; if (!prefs.voice) try { speechSynthesis.cancel(); } catch (e) {} save(); render(); if (prefs.voice) say('Brr brr patapim!'); });
-  $('newgame').addEventListener('click', () => { audio(); newGame(S.diff); caption('Nuova partita!', 'big'); });
+  $('newgame').addEventListener('click', () => { audio(); newGame(S.diff); closeOnPhone(); caption('Nuova partita!', 'big'); });
   $('undo').addEventListener('click', undo);
   $('erase').addEventListener('click', erase);
   $('notes').addEventListener('click', () => { S.notesMode = !S.notesMode; save(); render(); });
   $('hint').addEventListener('click', hint);
+  mascot.addEventListener('click', () => { audio(); sfx.bubbles(); restartAnim(mascot, 'flip', 850); caption('SCUBA!', 'scuba'); });
 
   document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && menu.classList.contains('open')) return setMenu(false);
+    if (menu.classList.contains('open')) return;
     if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); return undo(); }
     if (e.ctrlKey || e.metaKey || e.altKey || !overlay.hidden) return;
     const k = e.key;
@@ -656,6 +801,7 @@
   }, 1000);
   try { speechSynthesis.getVoices(); } catch (e) {}
 
+  setMenu(false);
   if (load()) {
     renderAll();
     if (S.status === 'won') win();
