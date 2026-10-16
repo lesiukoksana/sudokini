@@ -1,0 +1,665 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sudokini Brainrotini</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<style>
+  :root {
+    --sugo: #E0262E;
+    --sugo-deep: #A8101A;
+    --basilico: #0F8A43;
+    --ink: #1B1209;
+    --crema: #FFC21A;
+    --piatto: #FFFFFF;
+    --peer: #FFF3CC;
+    --same: #FFDF73;
+    --wrongbg: #FFD6D9;
+    --muted: #6E5B49;
+    --line: #DCCFC0;
+    --emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    --bw: min(calc(100vw - 32px), 540px);
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { min-height: 100%; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font: 600 15px/1.45 "Nunito", system-ui, sans-serif;
+    background-color: #FFF8F4;
+    background-image:
+      linear-gradient(90deg, rgba(224, 38, 46, .30) 50%, transparent 0),
+      linear-gradient(rgba(224, 38, 46, .30) 50%, transparent 0);
+    background-size: 56px 56px;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--sugo); outline-offset: 2px; }
+
+  .app { max-width: 940px; margin: 0 auto; padding-inline: 16px; padding-block: 18px 48px; display: grid; gap: 18px; }
+
+  /* ---------- masthead ---------- */
+  .masthead { display: grid; justify-items: center; gap: 10px; text-align: center; }
+  .logo {
+    margin: 0; font: 400 clamp(40px, 9vw, 78px)/.9 "Lilita One", "Arial Black", sans-serif;
+    letter-spacing: .01em; transform: rotate(-2.5deg);
+    -webkit-text-stroke: 7px var(--ink); paint-order: stroke fill;
+    text-shadow: 5px 6px 0 var(--ink);
+    display: flex; flex-wrap: wrap; justify-content: center; column-gap: .25em;
+  }
+  .logo .a { color: var(--basilico); }
+  .logo .b { color: var(--piatto); }
+  .logo .c { color: var(--sugo); }
+  .tag {
+    margin: 0; display: inline-block; background: var(--ink); color: var(--crema);
+    font: 900 12px/1 "Nunito", sans-serif; text-transform: uppercase; letter-spacing: .14em;
+    padding: 8px 14px; border-radius: 4px; transform: rotate(1.2deg);
+  }
+  .cast { display: flex; gap: 6px; font: 26px/1 var(--emoji); }
+  .cast span { display: inline-block; animation: wobble 2.4s ease-in-out infinite; }
+  .cast span.boing { animation: boing .6s ease-out; }
+  @keyframes wobble { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg) translateY(-3px); } }
+  @keyframes boing { 0% { transform: scale(1); } 30% { transform: scale(1.9) translateY(-10px) rotate(-15deg); } 100% { transform: scale(1); } }
+
+  /* ---------- toolbar ---------- */
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
+  .seg {
+    display: inline-flex; background: var(--piatto); border: 3px solid var(--ink); border-radius: 999px;
+    box-shadow: 3px 3px 0 var(--ink); overflow: hidden;
+  }
+  .seg button {
+    border: 0; background: transparent; padding: 8px 13px; font-weight: 900; font-size: 13.5px; white-space: nowrap;
+  }
+  .seg button + button { border-left: 2px solid var(--ink); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--crema); }
+  .seg button[data-diff="estremo"][aria-pressed="true"] { background: var(--sugo); color: var(--piatto); }
+  .pill {
+    border: 3px solid var(--ink); border-radius: 999px; background: var(--piatto); padding: 7px 13px;
+    font-weight: 900; font-size: 13.5px; box-shadow: 3px 3px 0 var(--ink); white-space: nowrap;
+  }
+  .pill[aria-pressed="false"] { background: #EFE7DD; color: var(--muted); text-decoration: line-through; }
+  .pill.go { background: var(--basilico); color: var(--piatto); }
+  .pill:active, .seg:active, .tile:active, .ctrl:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+
+  /* ---------- play area ---------- */
+  .play { display: grid; gap: 20px; justify-items: center; }
+  .stage { width: var(--bw); display: grid; gap: 10px; }
+  .stats {
+    display: flex; justify-content: space-between; gap: 8px; background: var(--piatto);
+    border: 3px solid var(--ink); border-radius: 12px; box-shadow: 4px 4px 0 var(--ink); padding: 7px 14px;
+  }
+  .stat { display: grid; gap: 1px; }
+  .stat:last-child { text-align: right; }
+  .stat b { font: 900 10.5px/1 "Nunito", sans-serif; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+  .stat span { font: 400 20px/1.1 "Lilita One", sans-serif; font-variant-numeric: tabular-nums; }
+  .stat .x { color: var(--sugo); }
+
+  .board-box { position: relative; }
+  .board {
+    width: var(--bw); display: grid; grid-template-columns: repeat(9, 1fr);
+    background: var(--piatto); border: 4px solid var(--ink); border-radius: 14px; overflow: hidden;
+    box-shadow: 7px 7px 0 var(--ink);
+  }
+  .cell {
+    position: relative; aspect-ratio: 1; border: 0; padding: 0; margin: 0; background: var(--piatto);
+    border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    display: grid; place-items: center; transition: background-color .12s;
+  }
+  .cell.cr { border-right: 3px solid var(--ink); }
+  .cell.ce { border-right: 0; }
+  .cell.rb { border-bottom: 3px solid var(--ink); }
+  .cell.re { border-bottom: 0; }
+  .cell:focus-visible { outline: 3px solid var(--sugo); outline-offset: -4px; }
+  .cell.peer { background: var(--peer); }
+  .cell.same { background: var(--same); }
+  .cell.sel { background: var(--crema); box-shadow: inset 0 0 0 3px var(--ink); }
+  .cell.wrong { background: var(--wrongbg); }
+  .cell.wrong.sel { background: #FFB3B9; }
+  .v {
+    font: 400 calc(var(--bw) / 9 * .56)/1 "Lilita One", var(--emoji);
+    font-variant-numeric: tabular-nums; pointer-events: none;
+  }
+  .chars .v { font-family: var(--emoji); font-size: calc(var(--bw) / 9 * .56); }
+  .cell.user .v { color: var(--basilico); }
+  .cell.hinted .v { color: #B07800; }
+  .cell.wrong .v { color: var(--sugo); }
+  .chars .cell.user::after, .chars .cell.wrong::after, .chars .cell.hinted::after {
+    content: ""; position: absolute; right: 9%; bottom: 9%; width: 13%; aspect-ratio: 1; border-radius: 50%;
+    background: var(--basilico); border: 1.5px solid var(--ink);
+  }
+  .chars .cell.wrong::after { background: var(--sugo); }
+  .chars .cell.hinted::after { background: var(--crema); }
+  .notes {
+    position: absolute; inset: 3%; display: grid; grid-template-columns: repeat(3, 1fr); place-items: center;
+    font: 900 calc(var(--bw) / 9 * .22)/1 "Nunito", var(--emoji); color: var(--muted); pointer-events: none;
+  }
+  .chars .notes { font-family: var(--emoji); font-size: calc(var(--bw) / 9 * .2); }
+
+  .cell.pop .v { animation: pop .38s cubic-bezier(.3, 1.8, .5, 1); }
+  .cell.shake { animation: shake .42s; }
+  .cell.flash { animation: flash .7s ease-out; }
+  @keyframes pop { 0% { transform: scale(.2) rotate(-25deg); } 100% { transform: scale(1); } }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+  @keyframes flash { 0% { background: var(--basilico); } 100% { background: var(--piatto); } }
+
+  .caption {
+    position: absolute; left: 50%; top: 40%; width: 96%; text-align: center; pointer-events: none; z-index: 3;
+    font: 400 calc(var(--bw) * .068)/1.05 "Anton", "Impact", sans-serif; text-transform: uppercase; letter-spacing: .01em;
+    color: var(--piatto); -webkit-text-stroke: 7px var(--ink); paint-order: stroke fill; text-wrap: balance;
+    opacity: 0; transform: translate(-50%, -50%) rotate(var(--tilt, -4deg));
+  }
+  .caption.big { font-size: calc(var(--bw) * .1); color: var(--crema); }
+  .caption.bad { color: #FF5A61; }
+  .caption.show { animation: capIn 1.5s ease-out forwards; }
+  @keyframes capIn {
+    0% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--tilt)) scale(.3); }
+    12% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--tilt)) scale(1.15); }
+    22% { transform: translate(-50%, -50%) rotate(var(--tilt)) scale(1); }
+    78% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -75%) rotate(var(--tilt)) scale(1); }
+  }
+
+  .overlay {
+    position: absolute; inset: 0; z-index: 4; border-radius: 14px; display: grid; place-items: center; padding: 18px;
+    background: rgba(27, 18, 9, .8);
+  }
+  .card {
+    background: var(--piatto); border: 4px solid var(--ink); border-radius: 16px; box-shadow: 6px 6px 0 var(--sugo);
+    padding: 20px; text-align: center; display: grid; gap: 10px; max-width: 360px; transform: rotate(-1.5deg);
+  }
+  .card .big-e { font: 54px/1 var(--emoji); }
+  .card h2 { margin: 0; font: 400 34px/1 "Lilita One", sans-serif; text-wrap: balance; }
+  .card p { margin: 0; color: var(--muted); }
+  .card dl { margin: 4px 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .card dl div { background: var(--peer); border: 2px solid var(--ink); border-radius: 10px; padding: 6px; }
+  .card dt { font: 900 10px/1 "Nunito", sans-serif; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+  .card dd { margin: 3px 0 0; font: 400 20px/1 "Lilita One", sans-serif; font-variant-numeric: tabular-nums; }
+  .card .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
+  /* ---------- side ---------- */
+  .side { width: var(--bw); display: grid; gap: 14px; align-content: start; }
+  .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+  .tile {
+    position: relative; border: 3px solid var(--ink); border-radius: 13px; background: var(--t, var(--piatto));
+    box-shadow: 3px 3px 0 var(--ink); padding: 8px 4px 7px; display: grid; justify-items: center; align-content: center; gap: 3px;
+    min-height: 82px;
+  }
+  .tile .pe { font: 30px/1 var(--emoji); }
+  .tile .pd { font: 400 32px/1 "Lilita One", sans-serif; }
+  .tile.num .pe { font-size: 15px; }
+  .tile .pn { font: 900 10.5px/1.1 "Nunito", sans-serif; text-align: center; text-wrap: balance; }
+  .tile .pc {
+    position: absolute; top: 4px; right: 6px; font: 900 11px/1 "Nunito", sans-serif; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .tile.done { opacity: .35; }
+  .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+  .ctrl {
+    position: relative; border: 3px solid var(--ink); border-radius: 13px; background: var(--piatto);
+    box-shadow: 3px 3px 0 var(--ink); padding: 8px 2px; display: grid; justify-items: center; gap: 3px;
+    font: 900 12px/1 "Nunito", sans-serif;
+  }
+  .ctrl svg { width: 22px; height: 22px; fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .ctrl[aria-pressed="true"] { background: var(--crema); }
+  .ctrl .badge {
+    position: absolute; top: -9px; right: -7px; min-width: 22px; height: 22px; border-radius: 999px; background: var(--sugo);
+    color: var(--piatto); border: 2px solid var(--ink); font: 900 11.5px/18px "Nunito", sans-serif;
+  }
+  .ctrl:disabled { opacity: .45; cursor: not-allowed; }
+  .keys {
+    margin: 0; background: var(--ink); color: #F4E7D3; border-radius: 10px; padding: 9px 12px;
+    font-size: 12.5px; line-height: 1.5;
+  }
+  .keys kbd {
+    font: 900 11px/1 "Nunito", sans-serif; background: var(--crema); color: var(--ink); border-radius: 4px; padding: 2px 5px;
+  }
+
+  .confetti { position: fixed; top: -60px; z-index: 50; pointer-events: none; font: 30px/1 var(--emoji); animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+
+  @media (min-width: 900px) {
+    .play { grid-template-columns: auto 1fr; align-items: start; justify-items: stretch; }
+    .side { width: auto; padding-top: 58px; }
+  }
+  @media (max-width: 620px) {
+    .pad { grid-template-columns: repeat(9, 1fr); gap: 4px; }
+    .tile { min-height: 0; padding: 7px 0 5px; border-width: 2px; border-radius: 9px; box-shadow: 2px 2px 0 var(--ink); }
+    .tile .pn { display: none; }
+    .tile .pe { font-size: 22px; }
+    .tile .pd { font-size: 24px; }
+    .tile.num .pe { font-size: 11px; }
+    .tile .pc { position: static; font-size: 10px; }
+    .seg button { padding: 7px 10px; font-size: 12.5px; }
+    .keys { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+    .caption.show { animation: none !important; opacity: 1; }
+  }
+</style>
+
+<div class="app">
+  <header class="masthead">
+    <h1 class="logo"><span><span class="a">Sudo</span><span class="b">kini</span></span> <span class="c">Brainrotini</span></h1>
+    <p class="tag">Il sudoku più brainrot d'Italia · nove personaggi, zero neuroni</p>
+    <div class="cast" id="cast" aria-hidden="true"></div>
+  </header>
+
+  <nav class="toolbar" aria-label="Impostazioni partita">
+    <div class="seg" id="diff" aria-label="Difficoltà">
+      <button data-diff="facile">Facile</button>
+      <button data-diff="medio">Medio</button>
+      <button data-diff="difficile">Difficile</button>
+      <button data-diff="estremo">Estremo 💀</button>
+    </div>
+    <div class="seg" id="mode" aria-label="Simboli">
+      <button data-mode="chars">🦈 Personaggi</button>
+      <button data-mode="nums">123 Numeri</button>
+    </div>
+    <button class="pill" id="snd" aria-pressed="true">Suoni</button>
+    <button class="pill" id="voice" aria-pressed="true">Narratore</button>
+    <button class="pill go" id="newgame">Nuova partita</button>
+  </nav>
+
+  <main class="play">
+    <section class="stage">
+      <div class="stats">
+        <div class="stat"><b>Tempo</b><span id="time">00:00</span></div>
+        <div class="stat"><b>Errori</b><span id="mist">0/3</span></div>
+        <div class="stat"><b>Livello</b><span id="lvl">Medio</span></div>
+      </div>
+      <div class="board-box">
+        <div class="board" id="board" role="grid" aria-label="Griglia sudoku"></div>
+        <div class="caption" id="caption" aria-live="polite"></div>
+        <div class="overlay" id="overlay" hidden>
+          <div class="card" id="card"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="pad" id="pad" aria-label="Scegli un personaggio"></div>
+      <div class="controls">
+        <button class="ctrl" id="undo"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Annulla</button>
+        <button class="ctrl" id="erase"><svg viewBox="0 0 24 24"><path d="m7 21-4-4L14 6l6 6-9 9H7z"/><path d="M21 21H11"/><path d="m9 11 6 6"/></svg>Cancella</button>
+        <button class="ctrl" id="notes" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M17 3a2.8 2.8 0 0 1 4 4L8 20l-5 1 1-5z"/></svg>Note</button>
+        <button class="ctrl" id="hint"><svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>Aiuto<span class="badge" id="hintn">3</span></button>
+      </div>
+      <p class="keys">Tastiera: <kbd>1</kbd>–<kbd>9</kbd> metti · <kbd>←↑→↓</kbd> muovi · <kbd>Canc</kbd> cancella · <kbd>N</kbd> note · <kbd>H</kbd> aiuto · <kbd>Z</kbd> annulla · <kbd>M</kbd> personaggi/numeri</p>
+    </aside>
+  </main>
+</div>
+
+<script>
+(() => {
+  const CH = [
+    { e: '🦈', n: 'Tralalero Tralala', s: 'Tralalero tralalà!', t: '#CDE8FF' },
+    { e: '🐊', n: 'Bombardiro Crocodilo', s: 'Bombardiro Crocodilo in arrivo!', t: '#CFEFC6' },
+    { e: '🪵', n: 'Tung Tung Tung Sahur', s: 'Tung tung tung sahur!', t: '#F2DDBF' },
+    { e: '🐘', n: 'Lirilì Larilà', s: 'Lirilì larilà!', t: '#E2E6EE' },
+    { e: '🌳', n: 'Brr Brr Patapim', s: 'Brr brr patapim!', t: '#E6F6C4' },
+    { e: '🍌', n: 'Chimpanzini Bananini', s: 'Chimpanzini bananini, wa wa wa!', t: '#FFF0A3' },
+    { e: '🩰', n: 'Ballerina Cappuccina', s: 'Ballerina cappuccina, mi mi mi!', t: '#FFD8EB' },
+    { e: '☕', n: 'Cappuccino Assassino', s: 'Cappuccino assassino… shhh.', t: '#E8D6C6' },
+    { e: '🪿', n: 'Bombombini Gusini', s: 'Bombombini gusini, honk!', t: '#FFE2C2' },
+  ];
+  const INSULTS = ['Mamma mia, NO!', 'Che cosa fai?!', 'Porca miseria!', 'Ma sei serio?', 'Sbagliatissimo!', 'Brr brr… NO.', 'Ma che sei, un frigo?', 'Skibidi sbagliato!'];
+  const DIFFS = { facile: { label: 'Facile', remove: 38 }, medio: { label: 'Medio', remove: 47 }, difficile: { label: 'Difficile', remove: 53 }, estremo: { label: 'Estremo', remove: 58 } };
+  const MAX_MISTAKES = 3, HINTS = 3, KEY = 'sudokini-brainrotini-v1';
+
+  const ROW = [], COL = [], BOX = [], PEERS = [];
+  const ROWS = [...Array(9)].map(() => []), COLS = [...Array(9)].map(() => []), BOXES = [...Array(9)].map(() => []);
+  for (let i = 0; i < 81; i++) {
+    ROW[i] = Math.floor(i / 9); COL[i] = i % 9; BOX[i] = Math.floor(ROW[i] / 3) * 3 + Math.floor(COL[i] / 3);
+    ROWS[ROW[i]].push(i); COLS[COL[i]].push(i); BOXES[BOX[i]].push(i);
+  }
+  for (let i = 0; i < 81; i++) {
+    PEERS[i] = [];
+    for (let j = 0; j < 81; j++) if (j !== i && (ROW[j] === ROW[i] || COL[j] === COL[i] || BOX[j] === BOX[i])) PEERS[i].push(j);
+  }
+
+  /* ---------- generator ---------- */
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const popcount = m => { let n = 0; while (m) { m &= m - 1; n++; } return n; };
+
+  function solve(grid, limit, random) {
+    const g = grid.slice(), R = Array(9).fill(0), C = Array(9).fill(0), B = Array(9).fill(0);
+    for (let i = 0; i < 81; i++) if (g[i]) {
+      const b = 1 << g[i];
+      if ((R[ROW[i]] | C[COL[i]] | B[BOX[i]]) & b) return { count: 0 };
+      R[ROW[i]] |= b; C[COL[i]] |= b; B[BOX[i]] |= b;
+    }
+    let count = 0, first = null;
+    (function rec() {
+      let best = -1, mask = 0, bn = 10;
+      for (let i = 0; i < 81; i++) if (!g[i]) {
+        const m = ~(R[ROW[i]] | C[COL[i]] | B[BOX[i]]) & 0x3FE, n = popcount(m);
+        if (n < bn) { best = i; mask = m; bn = n; if (n === 0) return; }
+      }
+      if (best < 0) { count++; if (!first) first = g.slice(); return; }
+      const ds = [];
+      for (let d = 1; d <= 9; d++) if (mask & (1 << d)) ds.push(d);
+      if (random) shuffle(ds);
+      for (const d of ds) {
+        const b = 1 << d;
+        g[best] = d; R[ROW[best]] |= b; C[COL[best]] |= b; B[BOX[best]] |= b;
+        rec();
+        g[best] = 0; R[ROW[best]] &= ~b; C[COL[best]] &= ~b; B[BOX[best]] &= ~b;
+        if (count >= limit) return;
+      }
+    })();
+    return { count, solution: first };
+  }
+
+  function generate(diff) {
+    const sol = solve(Array(81).fill(0), 1, true).solution, puz = sol.slice();
+    let removed = 0;
+    for (const i of shuffle([...Array(81).keys()])) {
+      if (removed >= DIFFS[diff].remove) break;
+      const v = puz[i]; puz[i] = 0;
+      if (solve(puz, 2, false).count !== 1) puz[i] = v; else removed++;
+    }
+    return { puz, sol };
+  }
+
+  /* ---------- state ---------- */
+  let S = null, undoStack = [];
+  const prefs = { mode: 'chars', sound: true, voice: true };
+
+  function newGame(diff) {
+    const { puz, sol } = generate(diff);
+    S = { diff, puz, sol, values: puz.slice(), notes: Array(81).fill(0), hinted: Array(81).fill(false), mistakes: 0, hints: HINTS, elapsed: 0, status: 'playing', sel: puz.findIndex(v => !v) };
+    undoStack = []; overlay.hidden = true; save(); renderAll();
+  }
+  function restart() {
+    Object.assign(S, { values: S.puz.slice(), notes: Array(81).fill(0), hinted: Array(81).fill(false), mistakes: 0, hints: HINTS, elapsed: 0, status: 'playing', sel: S.puz.findIndex(v => !v) });
+    undoStack = []; overlay.hidden = true; save(); renderAll();
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify({ S, prefs })); } catch (e) {} }
+  function load() {
+    try {
+      const d = JSON.parse(localStorage.getItem(KEY));
+      if (d && d.S && d.S.sol && d.S.sol.length === 81) { S = d.S; Object.assign(prefs, d.prefs || {}); return true; }
+    } catch (e) {}
+    return false;
+  }
+  const isFixed = i => S.puz[i] !== 0 || S.hinted[i];
+  const isCorrect = i => S.values[i] === S.sol[i];
+
+  /* ---------- audio ---------- */
+  let ac = null;
+  function audio() {
+    if (!prefs.sound) return null;
+    try {
+      if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === 'suspended') ac.resume();
+    } catch (e) { return null; }
+    return ac;
+  }
+  function tone(freq, dur, type = 'triangle', vol = .2, when = 0, slide) {
+    const a = audio(); if (!a) return;
+    const t = a.currentTime + when, o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .03);
+  }
+  const SCALE = [0, 261.6, 293.7, 329.6, 349.2, 392, 440, 493.9, 523.3, 587.3];
+  const sfx = {
+    place: d => { tone(SCALE[d], .2, 'triangle', .2); tone(SCALE[d] * 2, .1, 'sine', .07, .03); },
+    note: () => tone(1250, .05, 'sine', .06),
+    wrong: () => { tone(230, .28, 'sawtooth', .13, 0, 90); tone(150, .32, 'square', .08, .14, 60); },
+    tung: () => { for (let k = 0; k < 3; k++) { tone(190, .14, 'sine', .55, k * .17, 70); tone(1100, .03, 'square', .05, k * .17); } },
+    win: () => [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, k) => tone(f, .2, 'triangle', .18, k * .12)),
+    lose: () => [392, 370, 349, 311].forEach((f, k) => tone(f, .4, 'sawtooth', .1, k * .28, f * .97)),
+    honk: () => { tone(440, .12, 'square', .1, 0, 380); tone(440, .12, 'square', .1, .16, 380); },
+  };
+  function say(text) {
+    if (!prefs.voice) return;
+    try {
+      const s = window.speechSynthesis; if (!s) return;
+      s.cancel();
+      const u = new SpeechSynthesisUtterance(text.replace(/[💀✈️]/gu, ''));
+      u.lang = 'it-IT';
+      const v = s.getVoices().find(v => /^it/i.test(v.lang)); if (v) u.voice = v;
+      u.rate = 1.08; u.pitch = .75;
+      s.speak(u);
+    } catch (e) {}
+  }
+
+  /* ---------- dom ---------- */
+  const $ = id => document.getElementById(id);
+  const board = $('board'), pad = $('pad'), cap = $('caption'), overlay = $('overlay'), card = $('card'), cast = $('cast');
+  const cells = [];
+  for (let i = 0; i < 81; i++) {
+    const b = document.createElement('button');
+    b.className = 'cell' + (COL[i] === 2 || COL[i] === 5 ? ' cr' : '') + (COL[i] === 8 ? ' ce' : '') + (ROW[i] === 2 || ROW[i] === 5 ? ' rb' : '') + (ROW[i] === 8 ? ' re' : '');
+    b.setAttribute('role', 'gridcell');
+    b.addEventListener('click', () => { S.sel = i; render(); });
+    board.appendChild(b); cells.push(b);
+  }
+  CH.forEach((c, k) => {
+    const s = document.createElement('span'); s.textContent = c.e; s.style.animationDelay = (k * -.27) + 's'; cast.appendChild(s);
+    const t = document.createElement('button'); t.className = 'tile'; t.style.setProperty('--t', c.t);
+    t.addEventListener('click', () => input(k + 1)); pad.appendChild(t);
+  });
+
+  const glyph = v => prefs.mode === 'chars' ? CH[v - 1].e : String(v);
+  const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+
+  function render() {
+    const sel = S.sel, sv = sel >= 0 ? S.values[sel] : 0;
+    board.classList.toggle('chars', prefs.mode === 'chars');
+    for (let i = 0; i < 81; i++) {
+      const c = cells[i], v = S.values[i], cl = c.classList;
+      const peer = sel >= 0 && i !== sel && (ROW[i] === ROW[sel] || COL[i] === COL[sel] || BOX[i] === BOX[sel]);
+      cl.toggle('sel', i === sel);
+      cl.toggle('peer', peer);
+      cl.toggle('same', !!sv && i !== sel && v === sv);
+      cl.toggle('wrong', !!v && !isCorrect(i));
+      cl.toggle('user', !!v && S.puz[i] === 0 && !S.hinted[i] && isCorrect(i));
+      cl.toggle('hinted', S.hinted[i]);
+      let html = '';
+      if (v) html = `<span class="v">${glyph(v)}</span>`;
+      else if (S.notes[i]) {
+        html = '<span class="notes">';
+        for (let d = 1; d <= 9; d++) html += `<span>${S.notes[i] & (1 << d) ? glyph(d) : ''}</span>`;
+        html += '</span>';
+      }
+      if (c._html !== html) { c.innerHTML = html; c._html = html; }
+      c.setAttribute('aria-label', `Riga ${ROW[i] + 1}, colonna ${COL[i] + 1}: ${v ? CH[v - 1].n + ' (' + v + ')' : 'vuota'}`);
+      c.tabIndex = i === sel ? 0 : -1;
+    }
+    const counts = Array(10).fill(0);
+    for (let i = 0; i < 81; i++) if (S.values[i] && isCorrect(i)) counts[S.values[i]]++;
+    [...pad.children].forEach((t, k) => {
+      const d = k + 1, c = CH[k], left = 9 - counts[d];
+      t.classList.toggle('num', prefs.mode === 'nums');
+      t.classList.toggle('done', left === 0);
+      t.setAttribute('aria-label', `${c.n} (${d}), ne mancano ${left}`);
+      t.innerHTML = prefs.mode === 'chars'
+        ? `<span class="pc">${left}</span><span class="pe">${c.e}</span><span class="pn">${c.n}</span>`
+        : `<span class="pc">${left}</span><span class="pd">${d}</span><span class="pe">${c.e}</span>`;
+    });
+    $('time').textContent = fmt(S.elapsed);
+    $('mist').innerHTML = S.mistakes ? `<span class="x">${S.mistakes}</span>/${MAX_MISTAKES}` : `0/${MAX_MISTAKES}`;
+    $('lvl').textContent = DIFFS[S.diff].label;
+    $('hintn').textContent = S.hints;
+    $('hint').disabled = S.hints <= 0;
+    $('notes').setAttribute('aria-pressed', String(!!S.notesMode));
+    document.querySelectorAll('#diff button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.diff === S.diff)));
+    document.querySelectorAll('#mode button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === prefs.mode)));
+    $('snd').setAttribute('aria-pressed', String(prefs.sound));
+    $('voice').setAttribute('aria-pressed', String(prefs.voice));
+  }
+  function renderAll() { cells.forEach(c => c._html = null); render(); }
+
+  /* ---------- reactions ---------- */
+  let capTimer;
+  function caption(text, kind = '') {
+    cap.textContent = text;
+    cap.className = 'caption ' + kind;
+    cap.style.setProperty('--tilt', (Math.random() * 10 - 5).toFixed(1) + 'deg');
+    void cap.offsetWidth;
+    cap.classList.add('show');
+    clearTimeout(capTimer); capTimer = setTimeout(() => cap.classList.remove('show'), 1550);
+  }
+  function anim(i, cls) { const c = cells[i]; c.classList.remove(cls); void c.offsetWidth; c.classList.add(cls); setTimeout(() => c.classList.remove(cls), 750); }
+  function boing(d) { const s = cast.children[d - 1]; s.classList.remove('boing'); void s.offsetWidth; s.classList.add('boing'); setTimeout(() => s.classList.remove('boing'), 650); }
+  function confetti() {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    for (let k = 0; k < 60; k++) {
+      const s = document.createElement('span'); s.className = 'confetti';
+      s.textContent = CH[k % 9].e;
+      s.style.left = Math.random() * 100 + 'vw';
+      s.style.fontSize = (20 + Math.random() * 26) + 'px';
+      s.style.animationDuration = (2.2 + Math.random() * 2.4) + 's';
+      s.style.animationDelay = (Math.random() * .9) + 's';
+      document.body.appendChild(s); setTimeout(() => s.remove(), 6000);
+    }
+  }
+
+  function afterCorrect(i, d) {
+    for (const j of PEERS[i]) S.notes[j] &= ~(1 << d);
+    anim(i, 'pop'); boing(d); sfx.place(d);
+    const groups = [ROWS[ROW[i]], COLS[COL[i]], BOXES[BOX[i]]].filter(g => g.every(isCorrect));
+    const allOfDigit = S.values.filter((v, k) => v === d && isCorrect(k)).length === 9;
+    if (S.values.every((v, k) => v === S.sol[k])) return win();
+    if (groups.length) {
+      groups.flat().forEach(j => anim(j, 'flash'));
+      setTimeout(sfx.tung, 120); boing(3);
+      const t = groups.length > 1 ? 'COMBO! Tung tung tung SAHUR!' : 'Tung tung tung SAHUR!';
+      caption(t, 'big'); say(t);
+    } else if (allOfDigit) {
+      const t = `Tutti i ${CH[d - 1].n} sono a casa!`;
+      caption(t, 'big'); say(t); if (d === 9) sfx.honk();
+    } else {
+      caption(CH[d - 1].s); say(CH[d - 1].s);
+    }
+  }
+
+  /* ---------- actions ---------- */
+  function pushUndo(i) { undoStack.push({ i, v: S.values[i], n: S.notes[i] }); if (undoStack.length > 300) undoStack.shift(); }
+
+  function input(d) {
+    audio();
+    if (S.status !== 'playing' || S.sel < 0) return;
+    const i = S.sel;
+    if (isFixed(i)) { anim(i, 'shake'); return; }
+    if (S.notesMode) {
+      if (S.values[i]) return;
+      pushUndo(i); S.notes[i] ^= 1 << d; sfx.note(); save(); render(); return;
+    }
+    if (S.values[i] === d) return;
+    pushUndo(i);
+    S.values[i] = d; S.notes[i] = 0;
+    if (d === S.sol[i]) afterCorrect(i, d);
+    else {
+      S.mistakes++; sfx.wrong(); anim(i, 'shake');
+      const t = INSULTS[Math.floor(Math.random() * INSULTS.length)];
+      if (S.mistakes >= MAX_MISTAKES) { render(); return lose(); }
+      caption(t, 'bad'); say(t);
+    }
+    save(); render();
+  }
+  function erase() {
+    if (S.status !== 'playing' || S.sel < 0) return;
+    const i = S.sel;
+    if (isFixed(i) || (!S.values[i] && !S.notes[i])) return;
+    pushUndo(i); S.values[i] = 0; S.notes[i] = 0; sfx.note(); save(); render();
+  }
+  function undo() {
+    if (S.status !== 'playing') return;
+    const u = undoStack.pop(); if (!u) { caption('Niente da annullare'); return; }
+    S.values[u.i] = u.v; S.notes[u.i] = u.n; S.sel = u.i; sfx.note(); save(); render();
+  }
+  function hint() {
+    audio();
+    if (S.status !== 'playing') return;
+    if (S.hints <= 0) { caption('Aiuti finiti, bombardiro!', 'bad'); return; }
+    let i = S.sel;
+    if (i < 0 || isFixed(i) || isCorrect(i)) {
+      const open = [...Array(81).keys()].filter(k => !isCorrect(k));
+      if (!open.length) return;
+      i = open[Math.floor(Math.random() * open.length)];
+    }
+    S.hints--; S.sel = i; S.values[i] = S.sol[i]; S.notes[i] = 0; S.hinted[i] = true;
+    afterCorrect(i, S.sol[i]);
+    if (S.status === 'playing') { caption(`Aiutino: ${CH[S.sol[i] - 1].n}!`); }
+    save(); render();
+  }
+  function move(dr, dc) {
+    let i = S.sel < 0 ? 0 : S.sel;
+    const r = (ROW[i] + dr + 9) % 9, c = (COL[i] + dc + 9) % 9;
+    S.sel = r * 9 + c; render(); cells[S.sel].focus();
+  }
+
+  function showCard(html) { card.innerHTML = html; overlay.hidden = false; card.querySelector('button')?.focus(); }
+  function win() {
+    S.status = 'won';
+    let best = null;
+    try {
+      const k = KEY + '-best-' + S.diff, prev = +localStorage.getItem(k) || 0;
+      best = prev && prev < S.elapsed ? prev : S.elapsed;
+      localStorage.setItem(k, best);
+    } catch (e) {}
+    save(); render();
+    sfx.win(); confetti(); say('Hai vinto! Sei il re del brainrot!');
+    showCard(`<div class="big-e">🦈🐊🪵</div><h2>Hai vinto!</h2><p>Sei ufficialmente il re del brainrot. Tralalero è fiero di te.</p>
+      <dl><div><dt>Tempo</dt><dd>${fmt(S.elapsed)}</dd></div><div><dt>Errori</dt><dd>${S.mistakes}</dd></div><div><dt>Record</dt><dd>${best != null ? fmt(best) : '—'}</dd></div></dl>
+      <div class="row"><button class="pill go" data-act="new">Nuova partita</button></div>`);
+  }
+  function lose() {
+    S.status = 'lost'; save();
+    sfx.lose(); say('Mamma mia! Bombardiro ha bombardato la tua partita.');
+    showCard(`<div class="big-e">🐊✈️💥</div><h2>Mamma mia!</h2><p>Tre errori. Bombardiro Crocodilo ha bombardato la tua partita.</p>
+      <div class="row"><button class="pill" data-act="retry">Riprova questo</button><button class="pill go" data-act="new">Nuova partita</button></div>`);
+  }
+  card.addEventListener('click', e => {
+    const a = e.target.closest('button')?.dataset.act;
+    if (a === 'new') newGame(S.diff);
+    if (a === 'retry') restart();
+  });
+
+  /* ---------- wiring ---------- */
+  $('diff').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { audio(); newGame(b.dataset.diff); caption(DIFFS[b.dataset.diff].label + '!', 'big'); } });
+  $('mode').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { prefs.mode = b.dataset.mode; save(); renderAll(); } });
+  $('snd').addEventListener('click', () => { prefs.sound = !prefs.sound; save(); render(); if (prefs.sound) sfx.place(5); });
+  $('voice').addEventListener('click', () => { prefs.voice = !prefs.voice; if (!prefs.voice) try { speechSynthesis.cancel(); } catch (e) {} save(); render(); if (prefs.voice) say('Brr brr patapim!'); });
+  $('newgame').addEventListener('click', () => { audio(); newGame(S.diff); caption('Nuova partita!', 'big'); });
+  $('undo').addEventListener('click', undo);
+  $('erase').addEventListener('click', erase);
+  $('notes').addEventListener('click', () => { S.notesMode = !S.notesMode; save(); render(); });
+  $('hint').addEventListener('click', hint);
+
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); return undo(); }
+    if (e.ctrlKey || e.metaKey || e.altKey || !overlay.hidden) return;
+    const k = e.key;
+    if (/^[1-9]$/.test(k)) { e.preventDefault(); return input(+k); }
+    const arrows = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+    if (arrows[k]) { e.preventDefault(); return move(...arrows[k]); }
+    if (k === 'Backspace' || k === 'Delete' || k === '0') { e.preventDefault(); return erase(); }
+    const l = k.toLowerCase();
+    if (l === 'n') { S.notesMode = !S.notesMode; save(); render(); }
+    else if (l === 'h') hint();
+    else if (l === 'z') undo();
+    else if (l === 'm') { prefs.mode = prefs.mode === 'chars' ? 'nums' : 'chars'; save(); renderAll(); }
+  });
+
+  setInterval(() => {
+    if (!S || S.status !== 'playing' || document.hidden) return;
+    S.elapsed++; $('time').textContent = fmt(S.elapsed);
+    if (S.elapsed % 5 === 0) save();
+  }, 1000);
+  try { speechSynthesis.getVoices(); } catch (e) {}
+
+  if (load()) {
+    renderAll();
+    if (S.status === 'won') win();
+    else if (S.status === 'lost') lose();
+  } else newGame('medio');
+})();
+</script>
